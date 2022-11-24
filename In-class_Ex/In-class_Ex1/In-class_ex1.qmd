@@ -1,0 +1,37 @@
+---
+title: "Hands-on Exercise 1"
+format:
+  html: 
+    number-sections: true
+    highlight-style: github
+editor: visual
+---
+
+## Overview
+
+This xxx
+
+## Getting Started
+
+The code chunk below will install and load tidyverse and sf packages.
+
+```{r}
+pacman::p_load(sf, tidyverse, spdep)
+```
+
+## Importing Geospatial Data
+
+### Importing polygon features
+
+This code chunk will import ESRI shapefile into R.
+
+```{r}
+hunan_sf <- st_read(dsn = "data/geospatial",
+                layer = "Hunan")
+```
+
+### Importing attribute data in csv
+
+```{r}
+hunan <- read_csv("data/aspatial/Hunan_2012.csv")
+```

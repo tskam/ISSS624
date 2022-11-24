@@ -33,5 +33,47 @@
     "title": "ISSS624",
     "section": "",
     "text": "In this webpage, I am going to share with you my learning journey of geospatial analytics."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex1/In-class_ex1.html",
+    "href": "In-class_Ex/In-class_Ex1/In-class_ex1.html",
+    "title": "Hands-on Exercise 1",
+    "section": "",
+    "text": "This xxx"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex1/In-class_ex1.html#getting-started",
+    "href": "In-class_Ex/In-class_Ex1/In-class_ex1.html#getting-started",
+    "title": "Hands-on Exercise 1",
+    "section": "2 Getting Started",
+    "text": "2 Getting Started\nThe code chunk below will install and load tidyverse and sf packages.\n\npacman::p_load(sf, tidyverse, spdep)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex1/In-class_ex1.html#importing-geospatial-data",
+    "href": "In-class_Ex/In-class_Ex1/In-class_ex1.html#importing-geospatial-data",
+    "title": "Hands-on Exercise 1",
+    "section": "3 Importing Geospatial Data",
+    "text": "3 Importing Geospatial Data\n\n3.1 Importing polygon features\nThis code chunk will import ESRI shapefile into R.\n\nhunan_sf <- st_read(dsn = \"data/geospatial\",\n                layer = \"Hunan\")\n\nReading layer `Hunan' from data source \n  `D:\\tskam\\ISSS624\\In-class_Ex\\In-class_Ex1\\data\\geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 88 features and 7 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812\nGeodetic CRS:  WGS 84\n\n\n\n\n3.2 Importing attribute data in csv\n\nhunan <- read_csv(\"data/aspatial/Hunan_2012.csv\")\n\nRows: 88 Columns: 29\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr  (2): County, City\ndbl (27): avg_wage, deposite, FAI, Gov_Rev, Gov_Exp, GDP, GDPPC, GIO, Loan, ...\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1.html",
+    "href": "Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1.html",
+    "title": "Hands-on Exercise 1: Geospatial Data Wrangling with R",
+    "section": "",
+    "text": "In this hands-on exercise, I learn how to import and wrangling geospatial data using appropriate R packages."
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1.html#getting-started",
+    "href": "Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1.html#getting-started",
+    "title": "Hands-on Exercise 1: Geospatial Data Wrangling with R",
+    "section": "Getting Started",
+    "text": "Getting Started\nThe code chunk below install and load sf and tidyverse packages into R environment.\n\npacman::p_load(sf, tidyverse)"
+  },
+  {
+    "objectID": "Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1.html#importing-geospatial-data",
+    "href": "Hands-on_Ex/Hands-on_Ex1/Hands-on_Ex1.html#importing-geospatial-data",
+    "title": "Hands-on Exercise 1: Geospatial Data Wrangling with R",
+    "section": "Importing Geospatial Data",
+    "text": "Importing Geospatial Data\n\nImporting polygon feature data\n\nmpsz <- st_read(dsn = \"data/geospatial\", layer = \"MP14_SUBZONE_WEB_PL\")\n\nReading layer `MP14_SUBZONE_WEB_PL' from data source \n  `D:\\tskam\\ISSS624\\Hands-on_Ex\\Hands-on_Ex1\\data\\geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 323 features and 15 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21"
   }
 ]
