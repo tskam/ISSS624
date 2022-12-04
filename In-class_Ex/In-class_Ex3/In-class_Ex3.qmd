@@ -11,11 +11,11 @@ editor: visual
 
 This in-class exercise note aims to share with ways to handle aspatial and geospatial data that might be useful when you work on Take-home Exercise 2. By the end of this in-class exercise, you will be able to:
 
--   import geospatial data in wkt format into R
+-   import geospatial data in wkt format into R,
 
--   performing point in polygon overlay
+-   convert the tibble data frame with wkt field into sf data frame, and
 
--   
+-   performing point-in-polygon overlay.
 
 ## Getting Started
 
@@ -109,4 +109,4 @@ Notice that a new field called *shapeName* has been added into *wp_sf* sf data f
 
 Now you will be able to apply appropriate data wrangling functions of dplyr to extract the necessary clustering variables by using this data frame.
 
->Be warned: Please do remember to delete the large data files in the project repository before push the changes onto github.
+> Be warned: Please do remember to delete the large data files in the project repository before push the changes onto github.

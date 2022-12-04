@@ -137,7 +137,7 @@
     "href": "In-class_Ex/In-class_Ex3/In-class_Ex3.html",
     "title": "Regionalisation with Spatially Constrained Cluster Analysis",
     "section": "",
-    "text": "This in-class exercise note aims to share with ways to handle aspatial and geospatial data that might be useful when you work on Take-home Exercise 2. By the end of this in-class exercise, you will be able to:\n\nimport geospatial data in wkt format into R\nperforming point in polygon overlay"
+    "text": "This in-class exercise note aims to share with ways to handle aspatial and geospatial data that might be useful when you work on Take-home Exercise 2. By the end of this in-class exercise, you will be able to:\n\nimport geospatial data in wkt format into R,\nconvert the tibble data frame with wkt field into sf data frame, and\nperforming point-in-polygon overlay."
   },
   {
     "objectID": "In-class_Ex/In-class_Ex3/In-class_Ex3.html#data-import",
