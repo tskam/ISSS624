@@ -10,7 +10,16 @@ editor: visual
 
 ## Overview
 
+In Chapter 4, you learned how to compute Global and Local Measures of Spatial Association by using functions provided by [spdep]() package.  In this chapter, you will gain hands-on experience on using functions provide by [sfdep](), an interface to integrate with sf objects and the tidyverse framework, to compute Global and Local Measures of Spatial Association.   
+
 ## Getting Started
+
+
+Installing sfdep
+
+```{r}
+remotes::install_github("josiahparry/sfdep")
+```
 
 In the code chunk below, `p_load()` of *pacman* package is used to install and load the following R packages into R environment:
 
@@ -19,10 +28,21 @@ In the code chunk below, `p_load()` of *pacman* package is used to install and l
 -   tmap,
 -   spdep, and
 -   funModeling will be used for rapid Exploratory Data Analysis
+-   rgeoda
+
+Installing sfdep
 
 ```{r}
-pacman::p_load(sf, tidyverse, tmap, spdep, funModeling)
+remotes::install_github("josiahparry/sfdep")
 ```
+
+Note: You only need to run the code chunk above once.
+
+
+```{r}
+pacman::p_load(sf, tidyverse, tmap, funModeling, sfdep)
+```
+
 
 ## Importing Geospatial Data
 
@@ -188,12 +208,16 @@ write_rds(nga_wp, "geodata/nga_wp.rds")
 
 Before you end this section, please remember to delete away all the raw data.  Notice that the only data file left is *nga_wp.rds* and it's file size is aroung 2.1MB.
 
+```{r}
+nga_wp <- read_rds("geodata/nga_wp.rds")
+```
+
+
 ## Visualising the spatial dsitribution of water points
 
 ```{r}
 #| fig-width: 14
 #| fig-height: 12
-nga_wp <- read_rds("geodata/nga_wp.rds")
 total <- qtm(nga_wp, "total wpt")
 wp_functional <- qtm(nga_wp, "wpt functional")
 wp_nonfunctional <- qtm(nga_wp, "wpt non-functional")
@@ -201,3 +225,41 @@ unknown <- qtm(nga_wp, "wpt unknown")
 
 tmap_arrange(total, wp_functional, wp_nonfunctional, unknown, asp=1, ncol=2)
 ```
+
+
+First, we will exclude LGA without water point from the analysis
+
+```{r}
+nga_wp <- nga_wp %>%
+  filter(`total wpt` > 0)
+```
+
+Next, 
+
+```{r}
+knn16_w <- st_knn(nga_wp$geometry, k = 16)
+summary(knn16_w)
+```
+
+
+```{r}
+nga_nb <- nga_wp %>% 
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb),
+         .before = 1)
+```  
+
+```{r}
+nga_lisa <- nga_nb %>% 
+  mutate(local_moran = local_moran(
+    `pct_non-functional`, nb, wt, nsim = 99),
+    .before = 1)
+```
+
+
+```{r}
+nga_lisa_sig <- nga_lisa %>%
+  filter(local_moran$p_ii <= 0.05)
+```
+
+

@@ -1,0 +1,112 @@
+---
+title: "Regionalisation with Spatially Constrained Cluster Analysis"
+execute: 
+  eval: false
+  message: false
+  warning: false
+editor: visual
+---
+
+## Overview
+
+This in-class exercise note aims to share with ways to handle aspatial and geospatial data that might be useful when you work on Take-home Exercise 2. By the end of this in-class exercise, you will be able to:
+
+-   import geospatial data in wkt format into R
+
+-   performing point in polygon overlay
+
+-   
+
+## Getting Started
+
+As usual, to get started, we will load the necessary R packages. For the purpose of this in-class exercise, three R packages will be used, they are:
+
+-   sf for importing and processing geospatial data,
+
+-   tidyverse for importing and processing non-spatial data. In this exercise, readr package will be used for importing wkt data and dplyr package will be used to wrangling the data.
+
+```{r}
+pacman::p_load(sf, tidyverse)
+```
+
+## Data Import
+
+In this in-class exercise, two data sets will be used. They are:
+
+### Importing water point data
+
+First, we are going to import the water point data into R environment.
+
+```{r}
+wp_nga <- read_csv("aspatial/WPdx.csv") %>%
+  filter(`#clean_country_name` == "Nigeria")
+```
+
+Thing to learn from the code chunk above:
+
+-   The original file name is called *Water_Point_Data_Exchange\_-\_PlusWPdx.csv,* it has been rename to *WPdx.csv* for easy encoding.
+-   Instead of using `read.csv()` of Base R to import the csv file into R, `read_csv()` is **readr** package is used. This is because during the initial data exploration, we notice that there is at least one field name with space between the field name (ie. *New Georeferenced Column*)
+-   The data file contains water point data of many countries. In this study, we are interested on water point in Nigeria on. Hence, `filter()` of **dplyr** is used to extract out records belong to Nigeria only.
+
+#### Convert wkt data
+
+After the data are imported into R environment, it is a good practice to review both the data structure and the data table if it is in tibble data frame format in R Studio.
+
+Notice that the newly imported tibble data frame (i.e. wp_nga) contains a field called *New Georeferenced Column* which represent spatial data in a textual format. In fact, this kind of text file is popularly known as **Well Known Text** in short **wkt**.
+
+![](img/image1.jpg)
+
+Two steps will be used to convert an asptial data file in wkt format into a sf data frame by using sf.
+
+First, `st_as_sfc()` of sf package is used to derive a new field called *Geometry* as shown in the code chunk below.
+
+```{r}
+wp_nga$Geometry = st_as_sfc(wp_nga$`New Georeferenced Column`)
+```
+
+If you open *wp_nga* data frame and scroll to the last field now, you will see a new field called *Geometry* has been added as shown below.
+
+![](img/image2.jpg){width="640"}
+
+Next, `st_sf()` will be used to convert the tibble data frame into sf data frame.
+
+```{r}
+wp_sf <- st_sf(wp_nga, crs=4326) 
+```
+
+When the process completed, a new sf data frame called *wp_sf* will be created.
+
+![](img/image3.jpg){width="480"}
+
+### Importing Nigeria LGA level boundary data
+
+For the purpose of this exercise, shapefile downloaded from [geoBoundaries](https://www.geoboundaries.org/) portal will be used.
+
+```{r}
+nga <- st_read(dsn = "geospatial",
+               layer = "geoBoundaries-NGA-ADM2",
+               crs = 4326) %>%
+  select(shapeName)
+```
+
+> Note: One of your classmate had done an excellance job in cleaning the LGA data before subsequent processing and analysis. You are encouraged to refer to his [Take-home Exercise 1](https://jordan-isss624-geospatial.netlify.app/posts/geo/geospatial_exercise/#visualising-of-distribution-using-ggplot) page especially the sub-section on [Data wrangling](https://jordan-isss624-geospatial.netlify.app/posts/geo/geospatial_exercise/#data-wrangling).
+
+> Gentle reminder: Please remember to acknowledge your classmate work if you referred to his procedures and code chunks.
+
+## Point in Polygon Overlay
+
+Although *wp_sf* sf data frame consists of a field called *#clean_adm2* which by right should provides the LGA name of the water point located. However, it is always a good practice to be more caution when dealing with data accuracy.
+
+In this section, we are going to use a geoprocessing function (or commonly know as GIS analysis) called **point-in-polygon overlay** to transfer the attribute information in *nga* sf data frame into *wp_sf* data frame.
+
+```{r}
+wp_sf <- st_join(wp_sf, nga)
+```
+
+Notice that a new field called *shapeName* has been added into *wp_sf* sf data frame. as shown below.
+
+![](img/image4.jpg)
+
+Now you will be able to apply appropriate data wrangling functions of dplyr to extract the necessary clustering variables by using this data frame.
+
+>Be warned: Please do remember to delete the large data files in the project repository before push the changes onto github.
