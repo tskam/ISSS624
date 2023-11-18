@@ -1,0 +1,14 @@
+{
+  "hash": "d50d244cd67dfd69efbffed6f2ec27f1",
+  "result": {
+    "markdown": "---\ntitle: \"Hands-on Exercise 1\"\nformat:\n  docx:\n    toc: true\n    number-sections: true\n    highlight-style: github\neditor: visual\n---\n\n\n## Overview\n\nThis xxx\n\n## Getting Started\n\nThe code chunk below will install and load tidyverse and sf packages.\n\n\n::: {.cell}\n\n```{.r .cell-code}\npacman::p_load(sf, tidyverse, spdep)\n```\n:::\n\n\n## Importing Geospatial Data\n\n### Importing polygon features\n\nThis code chunk will import ESRI shapefile into R.\n\n\n::: {.cell}\n\n```{.r .cell-code}\nhunan_sf <- st_read(dsn = \"data/geospatial\",\n                layer = \"Hunan\")\n```\n\n::: {.cell-output .cell-output-stdout}\n```\nReading layer `Hunan' from data source \n  `D:\\tskam\\ISSS624\\In-class_Ex\\In-class_Ex1\\data\\geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 88 features and 7 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 108.7831 ymin: 24.6342 xmax: 114.2544 ymax: 30.12812\nGeodetic CRS:  WGS 84\n```\n:::\n:::\n\n\n### Importing attribute data in csv\n\n\n::: {.cell}\n\n```{.r .cell-code}\nhunan <- read_csv(\"data/aspatial/Hunan_2012.csv\")\n```\n\n::: {.cell-output .cell-output-stderr}\n```\nRows: 88 Columns: 29\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr  (2): County, City\ndbl (27): avg_wage, deposite, FAI, Gov_Rev, Gov_Exp, GDP, GDPPC, GIO, Loan, ...\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n```\n:::\n:::\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": null,
+    "postProcess": false
+  }
+}
