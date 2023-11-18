@@ -247,16 +247,16 @@
   {
     "objectID": "In-class_Ex/In-class_Ex1/In-class_Ex1.html",
     "href": "In-class_Ex/In-class_Ex1/In-class_Ex1.html",
-    "title": "In-class Exercise 1",
+    "title": "In-class Exercise 1: My First Date with Geospatial Data Analytics",
     "section": "",
-    "text": "Loading the necessary libraries\n\npacman::p_load(sf, tmap, tidyverse)"
+    "text": "The code chunk below load the following packages:\n\ntmap: for thematic mapping\nsf: for geospatial data handling\ntidyverse for non-spatial data handling.\n\n\npacman::p_load(tmap, sf, tidyverse)"
   },
   {
     "objectID": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#getting-started",
     "href": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#getting-started",
-    "title": "In-class Exercise 1",
+    "title": "In-class Exercise 1: My First Date with Geospatial Data Analytics",
     "section": "",
-    "text": "Loading the necessary libraries\n\npacman::p_load(sf, tmap, tidyverse)"
+    "text": "The code chunk below load the following packages:\n\ntmap: for thematic mapping\nsf: for geospatial data handling\ntidyverse for non-spatial data handling.\n\n\npacman::p_load(tmap, sf, tidyverse)"
   },
   {
     "objectID": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#data-import",
@@ -278,5 +278,19 @@
     "title": "ISSS624",
     "section": "",
     "text": "&lt;!DOCTYPE qgis PUBLIC ‘http://mrcc.com/qgis.dtd’ ‘SYSTEM’&gt;     dataset\n\n\n        0 0     false"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#preparing-the-flow-data",
+    "href": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#preparing-the-flow-data",
+    "title": "In-class Exercise 1: My First Date with Geospatial Data Analytics",
+    "section": "Preparing the Flow Data",
+    "text": "Preparing the Flow Data\n\nImporting the OD data\nFirstly, we will import the Passenger Volume by Origin Destination Bus Stops data set downloaded from LTA DataMall by using read_csv() of readr package.\n\nodbus &lt;- read_csv(\"data/aspatial/origin_destination_bus_202308.csv\")\n\nA quick check of odbus tibble data frame shows that the values in OROGIN_PT_CODE and DESTINATON_PT_CODE are in numeric data type. Hence, the code chunk below is used to convert these data values into character data type.\n\nodbus$ORIGIN_PT_CODE &lt;- as.factor(odbus$ORIGIN_PT_CODE)\nodbus$DESTINATION_PT_CODE &lt;- as.factor(odbus$DESTINATION_PT_CODE) \n\n\n\nExtracting the study data\nFor the purpose of this exercise, we will extract commuting flows on weekday and between 7 and 9 o’clock.\n\norigtrip_7_9 &lt;- odbus %&gt;%\n  filter(DAY_TYPE == \"WEEKDAY\") %&gt;%\n  filter(TIME_PER_HOUR &gt;= 7 &\n           TIME_PER_HOUR &lt;= 9) %&gt;%\n  group_by(ORIGIN_PT_CODE) %&gt;%\n  summarise(TRIPS = sum(TOTAL_TRIPS))\n\n\ndesttrip_7_9 &lt;- odbus %&gt;%\n  filter(DAY_TYPE == \"WEEKDAY\") %&gt;%\n  filter(TIME_PER_HOUR &gt;= 7 &\n           TIME_PER_HOUR &lt;= 9) %&gt;%\n  group_by(DESTINATION_PT_CODE) %&gt;%\n  summarise(TRIPS = sum(TOTAL_TRIPS))\n\n\nodbus7_9 &lt;- odbus %&gt;%\n  filter(DAY_TYPE == \"WEEKDAY\") %&gt;%\n  filter(TIME_PER_HOUR &gt;= 7 &\n           TIME_PER_HOUR &lt;= 9) %&gt;%\n  group_by(ORIGIN_PT_CODE,\n           DESTINATION_PT_CODE) %&gt;%\n  summarise(TRIPS = sum(TOTAL_TRIPS))\n\nWe will save the output in rds format for future used.\n\nwrite_rds(odbus7_9, \"data/rds/odbus7_9.rds\")\n\nThe code chunk below will be used to import the save odbus7_9.rds into R environment.\n\nodbus7_9 &lt;- read_rds(\"data/rds/odbus7_9.rds\")"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#working-with-geospatial-data",
+    "href": "In-class_Ex/In-class_Ex1/In-class_Ex1.html#working-with-geospatial-data",
+    "title": "In-class Exercise 1: My First Date with Geospatial Data Analytics",
+    "section": "Working with Geospatial Data",
+    "text": "Working with Geospatial Data\nFor the purpose of this exercise, two geospatial data will be used. They are:\n\nBusStop: This data provides the location of bus stop as at last quarter of 2022.\nMPSZ-2019: This data provides the sub-zone boundary of URA Master Plan 2019.\n\nBoth data sets are in ESRI shapefile format.\n\nImporting geospatial data\nTwo geospatial data will be used in this exercise, they are:\n\nbusstop &lt;- st_read(dsn = \"data/geospatial\",\n                   layer = \"BusStop\") %&gt;%\n  st_transform(crs = 3414)\n\n\nmpsz &lt;- st_read(dsn = \"data/geospatial\",\n                   layer = \"MPSZ-2019\") %&gt;%\n  st_transform(crs = 3414)\n\nReading layer `MPSZ-2019' from data source \n  `D:\\tskam\\ISSS624\\In-class_Ex\\In-class_Ex1\\data\\geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 332 features and 6 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 103.6057 ymin: 1.158699 xmax: 104.0885 ymax: 1.470775\nGeodetic CRS:  WGS 84\n\nmpsz\n\nSimple feature collection with 332 features and 6 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33\nProjected CRS: SVY21 / Singapore TM\nFirst 10 features:\n                 SUBZONE_N SUBZONE_C       PLN_AREA_N PLN_AREA_C       REGION_N\n1              MARINA EAST    MESZ01      MARINA EAST         ME CENTRAL REGION\n2         INSTITUTION HILL    RVSZ05     RIVER VALLEY         RV CENTRAL REGION\n3           ROBERTSON QUAY    SRSZ01  SINGAPORE RIVER         SR CENTRAL REGION\n4  JURONG ISLAND AND BUKOM    WISZ01  WESTERN ISLANDS         WI    WEST REGION\n5             FORT CANNING    MUSZ02           MUSEUM         MU CENTRAL REGION\n6         MARINA EAST (MP)    MPSZ05    MARINE PARADE         MP CENTRAL REGION\n7                   SUDONG    WISZ03  WESTERN ISLANDS         WI    WEST REGION\n8                  SEMAKAU    WISZ02  WESTERN ISLANDS         WI    WEST REGION\n9           SOUTHERN GROUP    SISZ02 SOUTHERN ISLANDS         SI CENTRAL REGION\n10                 SENTOSA    SISZ01 SOUTHERN ISLANDS         SI CENTRAL REGION\n   REGION_C                       geometry\n1        CR MULTIPOLYGON (((33222.98 29...\n2        CR MULTIPOLYGON (((28481.45 30...\n3        CR MULTIPOLYGON (((28087.34 30...\n4        WR MULTIPOLYGON (((14557.7 304...\n5        CR MULTIPOLYGON (((29542.53 31...\n6        CR MULTIPOLYGON (((35279.55 30...\n7        WR MULTIPOLYGON (((15772.59 21...\n8        WR MULTIPOLYGON (((19843.41 21...\n9        CR MULTIPOLYGON (((30870.53 22...\n10       CR MULTIPOLYGON (((26879.04 26..."
   }
 ]
