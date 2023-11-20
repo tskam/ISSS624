@@ -1,5 +1,5 @@
 ---
-title: "In-class Exercise 1: My First Date with Geospatial Data Analytics"
+title: "In-class Exercise 1: My First Date with Geospatial Data Science"
 date: "18 November 2023"
 date-modified: "last-modified"
 format: html
@@ -10,111 +10,155 @@ execute:
 editor: visual
 ---
 
+## The Task
+
+In this in-class exercise, you are required to prepare a choropleth map showing the distribution of passenger trips at planning sub-zone by integrating *Passenger Volume by Origin Destination Bus Stops* and bus stop  data sets downloaded from LTA DataMall and Planning Sub-zone boundary of URA Master Plan 2019 downloaded from data.gov.sg.   
+
+
+![](img/image1.jpg)
+
+The specific task of this in-class exercise are as follows:
+
+- to import *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall in to RStudio environment,
+- to import geospatial data in ESRI shapefile format into sf data frame format,
+- to perform data wrangling by using appropriate functions from tidyverse and sf pakcges, and 
+-   to visualise the distribution of passenger trip by using tmap methods and functions.
+
 ## Getting Started
 
-The code chunk below load the following packages:
+Three R packages will be used in this in-class exercise, they are: 
 
--   tmap: for thematic mapping
--   sf: for geospatial data handling
--   tidyverse for non-spatial data handling.
+-   tidyverse for non-spatial data handling,
+-   sf for geospatial data handling,
+-   tmap for thematic mapping, and
+-   knitr for creating html table.
 
+::: {.panel-tabset}
+## The task
+Using the steps you learned from Hands-on Exercise 1, load these three R packages into RStudio. 
+
+## The solution
 ```{r}
-pacman::p_load(tmap, sf, tidyverse)
+pacman::p_load(tmap, sf, tidyverse, knitr)
 ```
+:::
 
-## Preparing the Flow Data
-
-### Importing the OD data
+## Importing the OD data
 
 Firstly, we will import the *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall by using `read_csv()` of **readr** package.
 
+::: {.panel-tabset}
+## The task
+Using the steps you learned from Hands-on Exercise 1, import *origin_destination_bus_202308.csv* downloaded from LTA DataMall into RStudio and save it as a tibble data frame called `odbus`. 
+
+## The solution
 ```{r}
-#| eval: false
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
+:::
 
-A quick check of odbus tibble data frame shows that the values in OROGIN_PT_CODE and DESTINATON_PT_CODE are in numeric data type. Hence, the code chunk below is used to convert these data values into character data type.
+A quick check of odbus tibble data frame shows that the values in OROGIN_PT_CODE and DESTINATON_PT_CODE are in numeric data type. 
 
 ```{r}
-#| eval: false
+glimpse(odbus)
+```
+
+::: {.panel-tabset}
+## The task
+Using appropriate tidyverse functions to convert these data values into factor data type.
+
+## The solution
+```{r}
 odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
 odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE) 
+```
+:::
+
+Notice that both of them are in factor data type now.
+
+```{r}
+glimpse(odbus)
 ```
 
 ### Extracting the study data
 
-For the purpose of this exercise, we will extract commuting flows on weekday and between 7 and 9 o'clock.
+::: {.panel-tabset}
+## The task
+For the purpose of this exercise, we will extract commuting flows on weekday and between 7 and 9 o'clock time intervals. Call the output tibble data table as `origin7_9`.  
 
+## The solutin
 ```{r}
-#| eval: false
-origtrip_7_9 <- odbus %>%
+origin7_9 <- odbus %>%
   filter(DAY_TYPE == "WEEKDAY") %>%
   filter(TIME_PER_HOUR >= 7 &
            TIME_PER_HOUR <= 9) %>%
   group_by(ORIGIN_PT_CODE) %>%
   summarise(TRIPS = sum(TOTAL_TRIPS))
 ```
+:::
+
+It should look similar to the data table below.
 
 ```{r}
-#| eval: false
-desttrip_7_9 <- odbus %>%
-  filter(DAY_TYPE == "WEEKDAY") %>%
-  filter(TIME_PER_HOUR >= 7 &
-           TIME_PER_HOUR <= 9) %>%
-  group_by(DESTINATION_PT_CODE) %>%
-  summarise(TRIPS = sum(TOTAL_TRIPS))
-```
-
-```{r}
-#| eval: false
-odbus7_9 <- odbus %>%
-  filter(DAY_TYPE == "WEEKDAY") %>%
-  filter(TIME_PER_HOUR >= 7 &
-           TIME_PER_HOUR <= 9) %>%
-  group_by(ORIGIN_PT_CODE,
-           DESTINATION_PT_CODE) %>%
-  summarise(TRIPS = sum(TOTAL_TRIPS))
+kable(head(origin7_9))
 ```
 
 We will save the output in rds format for future used.
 
 ```{r}
-#| eval: false
-write_rds(odbus7_9, "data/rds/odbus7_9.rds")
+write_rds(origin7_9, "data/rds/origin7_9.rds")
 ```
 
-The code chunk below will be used to import the save odbus7_9.rds into R environment.
+The code chunk below will be used to import the save origin7_9.rds into R environment.
 
 ```{r}
-#| eval: false
-odbus7_9 <- read_rds("data/rds/odbus7_9.rds")
+origin7_9 <- read_rds("data/rds/origin7_9.rds")
 ```
 
 ## Working with Geospatial Data
 
-For the purpose of this exercise, two geospatial data will be used. They are:
+In this section, you are required to import two shapefile  into RStudio, they are:
 
 -   BusStop: This data provides the location of bus stop as at last quarter of 2022.
 -   MPSZ-2019: This data provides the sub-zone boundary of URA Master Plan 2019.
 
-Both data sets are in ESRI shapefile format.
 
 ### Importing geospatial data
 
-Two geospatial data will be used in this exercise, they are:
+::: {.panel-tabset}
+## The task
+Using the steps you learned from Hands-on Exercise 1, import *BusStop* downloaded from LTA DataMall into RStudio and save it as a sf data frame called `busstop`. 
 
+## The solution
 ```{r}
-#| eval: false
 busstop <- st_read(dsn = "data/geospatial",
                    layer = "BusStop") %>%
   st_transform(crs = 3414)
 ```
+:::
 
+The structure of `busstop` sf tibble data frame should look as below.
+
+```{r}
+glimpse(busstop)
+```
+
+::: {.panel-tabset}
+## The task
+Using the steps you learned from Hands-on Exercise 1, import *MPSZ-2019* downloaded from eLearn into RStudio and save it as a sf data frame called `mpsz`. 
+
+## The solution
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial",
                    layer = "MPSZ-2019") %>%
   st_transform(crs = 3414)
-mpsz
+```
+:::
+
+The structure of `mpsz` sf tibble data frame should look as below.
+
+```{r}
+glimpse(mpsz)
 ```
 
 ::: callout-note
@@ -129,7 +173,6 @@ mpsz
 Code chunk below populates the planning subzone code (i.e. SUBZONE_C) of mpsz sf data frame into busstop sf data frame.
 
 ```{r}
-#| eval: false
 busstop_mpsz <- st_intersection(busstop, mpsz) %>%
   select(BUS_STOP_N, SUBZONE_C) %>%
   st_drop_geometry()
@@ -144,34 +187,26 @@ busstop_mpsz <- st_intersection(busstop, mpsz) %>%
 Before moving to the next step, it is wise to save the output into rds format.
 
 ```{r}
-#| eval: false
 write_rds(busstop_mpsz, "data/rds/busstop_mpsz.csv")  
 ```
 
+::: {.panel-tabset}
+## The task
 Next, we are going to append the planning subzone code from busstop_mpsz data frame onto odbus7_9 data frame.
 
+## The solution
 ```{r}
-#| eval: false
-orig_data <- left_join(origtrip_7_9 , busstop_mpsz,
+origin_data <- left_join(origin7_9 , busstop_mpsz,
             by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
   rename(ORIGIN_BS = ORIGIN_PT_CODE,
          ORIGIN_SZ = SUBZONE_C)
 ```
-
-```{r}
-#| eval: false
-od_data <- left_join(odbus7_9 , busstop_mpsz,
-            by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
-  rename(ORIGIN_BS = ORIGIN_PT_CODE,
-         ORIGIN_SZ = SUBZONE_C,
-         DESTIN_BS = DESTINATION_PT_CODE)
-```
+:::
 
 Before continue, it is a good practice for us to check for duplicating records.
 
 ```{r}
-#| eval: false
-duplicate <- orig_data %>%
+duplicate <- origin_data %>%
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
@@ -180,26 +215,37 @@ duplicate <- orig_data %>%
 If duplicated records are found, the code chunk below will be used to retain the unique records.
 
 ```{r}
-#| eval: false
-od_data <- unique(od_data)
+origin_data <- unique(origin_data)
 ```
 
 It will be a good practice to confirm if the duplicating records issue has been addressed fully.
 
-Next, we will update od_data data frame with the planning subzone codes.
+::: {.panel-tabset}
+## The task
+Next, write a code chunk to update od_data data frame with the planning subzone codes.
 
+## The solution
 ```{r}
-mpsz_origtrip <- left_join(mpsz, orig_data,
+mpsz_origtrip <- left_join(mpsz, 
+                           origin_data,
                            by = c("SUBZONE_C" = "ORIGIN_SZ"))
 ```
+:::
 
+## Choropleth Visualisation
+
+::: {.panel-tabset}
+## The task
+Using the steps you had learned, prepare a choropleth map showing the distribution of passenger trips at planning sub-zone level.  
+
+## The solution
 ```{r}
 tm_shape(mpsz_origtrip)+
   tm_fill("TRIPS", 
           style = "quantile", 
           palette = "Blues",
           title = "Passenger trips") +
-  tm_layout(main.title = "Passenger trips generated by planning subzone",
+  tm_layout(main.title = "Passenger trips generated at planning sub-zone level",
             main.title.position = "center",
             main.title.size = 1.2,
             legend.height = 0.45, 
@@ -211,58 +257,5 @@ tm_shape(mpsz_origtrip)+
   tm_grid(alpha =0.2) +
   tm_credits("Source: Planning Sub-zone boundary from Urban Redevelopment Authorithy (URA)\n and Population data from Department of Statistics DOS", 
              position = c("left", "bottom"))
-
-
 ```
-
-```{r}
-#| eval: false
-od_data <- left_join(od_data , busstop_mpsz,
-            by = c("DESTIN_BS" = "BUS_STOP_N")) 
-```
-
-```{r}
-#| eval: false
-duplicate <- od_data %>%
-  group_by_all() %>%
-  filter(n()>1) %>%
-  ungroup()
-```
-
-```{r}
-#| eval: false
-od_data <- unique(od_data)
-```
-
-```{r}
-#| eval: false
-od_data <- od_data %>%
-  rename(DESTIN_SZ = SUBZONE_C) %>%
-  drop_na()
-```
-
-It is time to save the output into an rds file format.
-
-```{r}
-#| eval: false
-write_rds(od_data, "data/rds/od_data.rds")
-```
-
-```{r}
-#| eval: false
-od_data <- read_rds("data/rds/od_data.rds")
-```
-
-## Visualising the Geospatial Data
-
-```{r}
-tmap_mode("plot")
-tmap_options(check.and.fix = TRUE)
-qtm(mpsz)
-```
-
-# Viewing the Subzone spatial file
-
-```{r}
-head(mpsz, 10)
-```
+:::
