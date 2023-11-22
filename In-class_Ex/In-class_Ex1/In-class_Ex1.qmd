@@ -12,32 +12,33 @@ editor: visual
 
 ## The Task
 
-In this in-class exercise, you are required to prepare a choropleth map showing the distribution of passenger trips at planning sub-zone by integrating *Passenger Volume by Origin Destination Bus Stops* and bus stop  data sets downloaded from LTA DataMall and Planning Sub-zone boundary of URA Master Plan 2019 downloaded from data.gov.sg.   
-
+In this in-class exercise, you are required to prepare a choropleth map showing the distribution of passenger trips at planning sub-zone by integrating *Passenger Volume by Origin Destination Bus Stops* and bus stop data sets downloaded from LTA DataMall and Planning Sub-zone boundary of URA Master Plan 2019 downloaded from data.gov.sg.
 
 ![](img/image1.jpg)
 
 The specific task of this in-class exercise are as follows:
 
-- to import *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall in to RStudio environment,
-- to import geospatial data in ESRI shapefile format into sf data frame format,
-- to perform data wrangling by using appropriate functions from tidyverse and sf pakcges, and 
+-   to import *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall in to RStudio environment,
+-   to import geospatial data in ESRI shapefile format into sf data frame format,
+-   to perform data wrangling by using appropriate functions from tidyverse and sf pakcges, and
 -   to visualise the distribution of passenger trip by using tmap methods and functions.
 
 ## Getting Started
 
-Three R packages will be used in this in-class exercise, they are: 
+Three R packages will be used in this in-class exercise, they are:
 
 -   tidyverse for non-spatial data handling,
 -   sf for geospatial data handling,
 -   tmap for thematic mapping, and
 -   knitr for creating html table.
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
-Using the steps you learned from Hands-on Exercise 1, load these three R packages into RStudio. 
+
+Using the steps you learned from Hands-on Exercise 1, load these three R packages into RStudio.
 
 ## The solution
+
 ```{r}
 pacman::p_load(tmap, sf, tidyverse, knitr)
 ```
@@ -47,27 +48,31 @@ pacman::p_load(tmap, sf, tidyverse, knitr)
 
 Firstly, we will import the *Passenger Volume by Origin Destination Bus Stops* data set downloaded from LTA DataMall by using `read_csv()` of **readr** package.
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
-Using the steps you learned from Hands-on Exercise 1, import *origin_destination_bus_202308.csv* downloaded from LTA DataMall into RStudio and save it as a tibble data frame called `odbus`. 
+
+Using the steps you learned from Hands-on Exercise 1, import *origin_destination_bus_202308.csv* downloaded from LTA DataMall into RStudio and save it as a tibble data frame called `odbus`.
 
 ## The solution
+
 ```{r}
 odbus <- read_csv("data/aspatial/origin_destination_bus_202308.csv")
 ```
 :::
 
-A quick check of odbus tibble data frame shows that the values in OROGIN_PT_CODE and DESTINATON_PT_CODE are in numeric data type. 
+A quick check of odbus tibble data frame shows that the values in OROGIN_PT_CODE and DESTINATON_PT_CODE are in numeric data type.
 
 ```{r}
 glimpse(odbus)
 ```
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
+
 Using appropriate tidyverse functions to convert these data values into factor data type.
 
 ## The solution
+
 ```{r}
 odbus$ORIGIN_PT_CODE <- as.factor(odbus$ORIGIN_PT_CODE)
 odbus$DESTINATION_PT_CODE <- as.factor(odbus$DESTINATION_PT_CODE) 
@@ -82,11 +87,13 @@ glimpse(odbus)
 
 ### Extracting the study data
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
-For the purpose of this exercise, we will extract commuting flows on weekday and between 7 and 9 o'clock time intervals. Call the output tibble data table as `origin7_9`.  
+
+For the purpose of this exercise, we will extract commuting flows on weekday and between 7 and 9 o'clock time intervals. Call the output tibble data table as `origin7_9`.
 
 ## The solutin
+
 ```{r}
 origin7_9 <- odbus %>%
   filter(DAY_TYPE == "WEEKDAY") %>%
@@ -117,19 +124,20 @@ origin7_9 <- read_rds("data/rds/origin7_9.rds")
 
 ## Working with Geospatial Data
 
-In this section, you are required to import two shapefile  into RStudio, they are:
+In this section, you are required to import two shapefile into RStudio, they are:
 
 -   BusStop: This data provides the location of bus stop as at last quarter of 2022.
 -   MPSZ-2019: This data provides the sub-zone boundary of URA Master Plan 2019.
 
-
 ### Importing geospatial data
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
-Using the steps you learned from Hands-on Exercise 1, import *BusStop* downloaded from LTA DataMall into RStudio and save it as a sf data frame called `busstop`. 
+
+Using the steps you learned from Hands-on Exercise 1, import *BusStop* downloaded from LTA DataMall into RStudio and save it as a sf data frame called `busstop`.
 
 ## The solution
+
 ```{r}
 busstop <- st_read(dsn = "data/geospatial",
                    layer = "BusStop") %>%
@@ -143,11 +151,13 @@ The structure of `busstop` sf tibble data frame should look as below.
 glimpse(busstop)
 ```
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
-Using the steps you learned from Hands-on Exercise 1, import *MPSZ-2019* downloaded from eLearn into RStudio and save it as a sf data frame called `mpsz`. 
+
+Using the steps you learned from Hands-on Exercise 1, import *MPSZ-2019* downloaded from eLearn into RStudio and save it as a sf data frame called `mpsz`.
 
 ## The solution
+
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial",
                    layer = "MPSZ-2019") %>%
@@ -190,11 +200,13 @@ Before moving to the next step, it is wise to save the output into rds format.
 write_rds(busstop_mpsz, "data/rds/busstop_mpsz.csv")  
 ```
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
+
 Next, we are going to append the planning subzone code from busstop_mpsz data frame onto odbus7_9 data frame.
 
 ## The solution
+
 ```{r}
 origin_data <- left_join(origin7_9 , busstop_mpsz,
             by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
@@ -220,11 +232,13 @@ origin_data <- unique(origin_data)
 
 It will be a good practice to confirm if the duplicating records issue has been addressed fully.
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
+
 Next, write a code chunk to update od_data data frame with the planning subzone codes.
 
 ## The solution
+
 ```{r}
 mpsz_origtrip <- left_join(mpsz, 
                            origin_data,
@@ -234,11 +248,13 @@ mpsz_origtrip <- left_join(mpsz,
 
 ## Choropleth Visualisation
 
-::: {.panel-tabset}
+::: panel-tabset
 ## The task
-Using the steps you had learned, prepare a choropleth map showing the distribution of passenger trips at planning sub-zone level.  
+
+Using the steps you had learned, prepare a choropleth map showing the distribution of passenger trips at planning sub-zone level.
 
 ## The solution
+
 ```{r}
 tm_shape(mpsz_origtrip)+
   tm_fill("TRIPS", 

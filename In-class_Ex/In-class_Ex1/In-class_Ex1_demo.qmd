@@ -1,4 +1,0 @@
----
-title: "In-class Exercise 1 demo"
-author: "Dr. Kam Tin Seong"
----
