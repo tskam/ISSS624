@@ -40,7 +40,8 @@ Using the steps you learned from Hands-on Exercise 1, load these three R package
 ## The solution
 
 ```{r}
-pacman::p_load(tmap, sf, tidyverse, knitr)
+pacman::p_load(tmap, sf, tidyverse, 
+               knitr, h3jsr)
 ```
 :::
 
