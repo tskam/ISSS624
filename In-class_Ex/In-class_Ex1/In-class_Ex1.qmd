@@ -14,7 +14,7 @@ editor: visual
 
 In this in-class exercise, you are required to prepare a choropleth map showing the distribution of passenger trips at planning sub-zone by integrating *Passenger Volume by Origin Destination Bus Stops* and bus stop data sets downloaded from LTA DataMall and Planning Sub-zone boundary of URA Master Plan 2019 downloaded from data.gov.sg.
 
-![](img/image1.jpg)
+![](img/image1.png)
 
 The specific task of this in-class exercise are as follows:
 
@@ -41,7 +41,7 @@ Using the steps you learned from Hands-on Exercise 1, load these three R package
 
 ```{r}
 pacman::p_load(tmap, sf, tidyverse, 
-               knitr, h3jsr)
+               knitr)
 ```
 :::
 
@@ -91,9 +91,9 @@ glimpse(odbus)
 ::: panel-tabset
 ## The task
 
-For the purpose of this exercise, we will extract commuting flows on weekday and between 7 and 9 o'clock time intervals. Call the output tibble data table as `origin7_9`.
+For the purpose of this exercise, we will extract commuting flows during the weekday morning peak. Call the output tibble data table as `origin7_9`.
 
-## The solutin
+## The solution
 
 ```{r}
 origin7_9 <- odbus %>%
@@ -209,17 +209,23 @@ Next, we are going to append the planning subzone code from busstop_mpsz data fr
 ## The solution
 
 ```{r}
-origin_data <- left_join(origin7_9 , busstop_mpsz,
+origin_SZ <- left_join(origin7_9 , busstop_mpsz,
             by = c("ORIGIN_PT_CODE" = "BUS_STOP_N")) %>%
   rename(ORIGIN_BS = ORIGIN_PT_CODE,
-         ORIGIN_SZ = SUBZONE_C)
+         ORIGIN_SZ = SUBZONE_C) %>%
+  group_by(ORIGIN_SZ) %>%
+  summarise(TOT_TRIPS = sum(TRIPS))
 ```
 :::
+
+
+
+
 
 Before continue, it is a good practice for us to check for duplicating records.
 
 ```{r}
-duplicate <- origin_data %>%
+duplicate <- origin_SZ %>%
   group_by_all() %>%
   filter(n()>1) %>%
   ungroup()
@@ -228,7 +234,7 @@ duplicate <- origin_data %>%
 If duplicated records are found, the code chunk below will be used to retain the unique records.
 
 ```{r}
-origin_data <- unique(origin_data)
+origin_data <- unique(origin_SZ)
 ```
 
 It will be a good practice to confirm if the duplicating records issue has been addressed fully.
@@ -241,8 +247,8 @@ Next, write a code chunk to update od_data data frame with the planning subzone 
 ## The solution
 
 ```{r}
-mpsz_origtrip <- left_join(mpsz, 
-                           origin_data,
+origintrip_SZ <- left_join(mpsz, 
+                           origin_SZ,
                            by = c("SUBZONE_C" = "ORIGIN_SZ"))
 ```
 :::
@@ -257,8 +263,8 @@ Using the steps you had learned, prepare a choropleth map showing the distributi
 ## The solution
 
 ```{r}
-tm_shape(mpsz_origtrip)+
-  tm_fill("TRIPS", 
+tm_shape(origintrip_SZ)+
+  tm_fill("TOT_TRIPS", 
           style = "quantile", 
           palette = "Blues",
           title = "Passenger trips") +
