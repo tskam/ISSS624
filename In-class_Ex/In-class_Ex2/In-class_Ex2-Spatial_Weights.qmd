@@ -1,0 +1,344 @@
+---
+title: "In-class Exercise 2: Spatial Weights - sfdep methods"
+date: "10 February 2023"
+date-modified: "last-modified"
+format: 
+  html:
+    fontsize: 20px
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual     
+---
+
+## Overview
+
+This in-class introduces an alternative R package to spdep package you used in Hands-on Exercise 6. The package is called [**sfdep**](https://sfdep.josiahparry.com/index.html). According to Josiah Parry, the developer of the package, "sfdep builds on the great shoulders of **spdep** package for spatial dependence. sfdep creates an sf and tidyverse friendly interface to the package as well as introduces new functionality that is not present in spdep. sfdep utilizes list columns extensively to make this interface possible."
+
+## Getting started
+
+### Installing and Loading the R Packages
+
+Four R packages will be used for this in-class exercise, they are: sf, sfdep, tmap, tidyverse.
+
+::: callout-note
+## Do It Yourself!
+
+Using the steps you learned in previous lesson, install and load **sf**, **tmap**, **sfdep**, **tidyverse** and **knitr** packages into R environment.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+pacman::p_load(sf, sfdep, tmap, tidyverse, knitr)
+```
+
+## The Data
+
+For the purpose of this in-class exercise, the Hunan data sets will be used. There are two data sets in this use case, they are:
+
+-   Hunan, a geospatial data set in ESRI shapefile format, and
+-   Hunan_2012, an attribute data set in csv format.
+
+### Importing geospatial data
+
+::: callout-note
+## Do It Yourself!
+
+Using the steps you learned in previous lesson, import *Hunan* shapefile into R environment as an sf data frame.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+### Importing attribute table
+
+::: callout-note
+## Do It Yourself!
+
+Using the steps you learned in previous lesson, import *Hunan_2012.csv* into R environment as an tibble data frame.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+### Combining both data frame by using left join
+
+::: callout-note
+## Do It Yourself!
+Using the steps you learned in previous lesson, combine the Hunan sf data frame and Hunan_2012 data frame. Ensure that the output is an sf data frame.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+hunan_GDPPC <- left_join(hunan, hunan2012) %>%
+  select(1:4, 7, 15)
+```
+
+::: callout-important
+In order to retain the geospatial properties, the left data frame must the sf data.frame (i.e. hunan)
+:::
+
+### Plotting a choropleth map
+
+::: callout-note
+## Do It Yourself!
+
+Using the steps you learned in previous lesson, plot a choropleth map showing the distribution of GDPPC of Hunan Province.
+:::
+
+The choropleth should look similar to ther figure below.
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+#| fig-width: 10
+#| fig-height: 8
+tmap_mode("plot")
+tm_shape(hunan_GDPPC) +
+  tm_fill("GDPPC", 
+          style = "quantile", 
+          palette = "Blues",
+          title = "GDPPC") +
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "Distribution of GDP per capita by district, Hunan Province",
+            main.title.position = "center",
+            main.title.size = 1.2,
+            legend.height = 0.45, 
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha =0.2)
+```
+
+## Deriving Contiguity Spatial Weights
+
+By and large, there are two types of spatial weights, they are contiguity wights and distance-based weights. In this section, you will learn how to derive contiguity spatial weights by using sfdep.
+
+Two steps are required to derive a contiguity spatial weights, they are:
+
+1.  identifying contiguity neighbour list by [`st_contiguity()`](https://sfdep.josiahparry.com/reference/st_contiguity.html) of **sfdep** package, and
+
+2.  deriving the contiguity spatial weights by using [`st_weights()`](https://sfdep.josiahparry.com/reference/st_weights.html) of **sfdep** package
+
+In this section, we will learn how to derive the contiguity neighbour list and contiguity spatial weights separately. Then, we will learn how to combine both steps into a single process.
+
+### Identifying contiguity neighbours: Queen's method
+
+In the code chunk below [`st_contiguity()`](https://sfdep.josiahparry.com/reference/st_contiguity.html) is used to derive a contiguity neighbour list by using Queen's method.
+
+```{r}
+nb_queen <- hunan_GDPPC %>% 
+  mutate(nb = st_contiguity(geometry),
+         .before = 1)
+```
+
+::: callout-important
+By default, queen argument is **TRUE**. If you do not specify *queen = FALSE*, this function will return a list of first order neighbours by using the Queen criteria. Rooks method will be used to identify the first order neighbour if queen = FALSE is used.
+:::
+
+The code chunk below is used to print the summary of the first lag neighbour list (i.e. nb) .
+
+```{r}
+summary(nb_queen$nb)
+```
+
+The summary report above shows that there are 88 area units in Hunan province. The most connected area unit has 11 neighbours. There are two are units with only one neighbour.
+
+To view the content of the data table, you can either display the output data frame on RStudio data viewer or by printing out the first ten records by using the code chunk below.
+
+```{r}
+nb_queen
+```
+
+The print shows that polygon 1 has five neighbours. They are polygons number 2, 3, 4, 57,and 85.
+
+One of the advantage of **sfdep** over **spdep** is that the output is an sf tibble data frame.   
+
+::: callout-note
+## Do It Yourself!
+Using the steps you learned in previous lesson, display nb_queen sf tibble data frame in a table display.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+kable(head(nb_queen,
+           n=10))
+```
+
+### Identify contiguity neighbours: Rooks' method
+
+::: callout-note
+## Do It Yourself!
+Using the steps you just learned, derive a contiguity neighbour list using Rooks' method.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+nb_rook <- hunan_GDPPC %>% 
+  mutate(nb = st_contiguity(geometry,
+                            queen = FALSE),
+         .before = 1)
+```
+
+### Identifying higher order neighbors
+
+There are times that we need to identify high order contiguity neighbours. To accomplish the task, [`st_nb_lag_cumul()`](https://sfdep.josiahparry.com/reference/st_nb_lag_cumul.html) should be used as shown in the code chunk below.
+
+::: callout-note
+## Do It Yourself!
+Using the steps you just learned, derive a contiguity neighbour list using lag 2 Queen's method.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code"
+nb2_queen <-  hunan_GDPPC %>% 
+  mutate(nb = st_contiguity(geometry),
+         nb2 = st_nb_lag_cumul(nb, 2),
+         .before = 1)
+```
+
+Note that if the order is 2, the result contains both 1st and 2nd order neighbors as shown on the print below.
+
+```{r}
+nb2_queen
+```
+
+## Deriving contiguity weights: Queen's method
+
+Now, you are ready to compute the contiguity weights by using [`st_weights()`](https://sfdep.josiahparry.com/reference/st_weights.html) of **sfdep** package.
+
+### Deriving contiguity weights: Queen's method
+
+In the code chunk below, queen method is used to derive the contiguity weights.
+
+```{r}
+wm_q <- hunan_GDPPC %>%
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W"),
+         .before = 1) 
+```
+
+Notice that `st_weights()` provides tree arguments, they are:
+
+-   *nb*: A neighbor list object as created by st_neighbors().
+-   *style*: Default "W" for row standardized weights. This value can also be "B", "C", "U", "minmax", and "S". B is the basic binary coding, W is row standardised (sums over all links to n), C is globally standardised (sums over all links to n), U is equal to C divided by the number of neighbours (sums over all links to unity), while S is the variance-stabilizing coding scheme proposed by Tiefelsdorf et al. 1999, p. 167-168 (sums over all links to n).
+-   *allow_zero*: If TRUE, assigns zero as lagged value to zone without neighbors.
+
+```{r}
+wm_q
+```
+
+## Distance-based Weights
+
+There are three popularly used distance-based spatial weights, they are:
+
+-   fixed distance weights,
+-   adaptive distance weights, and
+-   inverse distance weights (IDW).
+
+### Deriving fixed distance weights
+
+Before we can derive the fixed distance weights, we need to determine the upper limit for distance band by using the steps below:
+
+```{r}
+geo <- sf::st_geometry(hunan_GDPPC)
+nb <- st_knn(geo, longlat = TRUE)
+dists <- unlist(st_nb_dists(geo, nb))
+```
+
+::: callout-tip
+# Things to learn from the code chunk above
+
+-   [`st_nb_dists()`](https://sfdep.josiahparry.com/reference/st_nb_dists.html) of sfdep is used to calculate the nearest neighbour distance. The output is a list of distances for each observation's neighbors list.
+-   [`unlist()`](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/unlist) of Base R is then used to return the output as a vector so that the summary statistics of the nearest neighbour distances can be derived.
+:::
+
+Now, we will go ahead to derive summary statistics of the nearest neighbour distances vector (i.e. dists) by usign the coced chunk below.
+
+```{r}
+summary(dists)
+```
+
+The summary statistics report above shows that the maximum nearest neighbour distance is 65.80km. By using a threshold value of 66km will ensure that each area will have at least one neighbour.
+
+Now we will go ahead to compute the fixed distance weights by using the code chunk below.
+
+```{r}
+wm_fd <- hunan_GDPPC %>%
+  mutate(nb = st_dist_band(geometry,
+                           upper = 66),
+               wt = st_weights(nb),
+               .before = 1)
+```
+
+::: callout-tip
+# Things to learn from the code chunk above
+
+-   [`st_dists_band()`](https://sfdep.josiahparry.com/reference/st_dist_band.html) of sfdep is used to identify neighbors based on a distance band (i.e. 66km). The output is a list of neighbours (i.e. nb).
+-   [`st_weights()`](https://sfdep.josiahparry.com/reference/st_weights.html) is then used to calculate polygon spatial weights of the nb list. Note that:
+    -   the default `style` argument is set to "W" for row standardized weights, and
+    -   the default `allow_zero` is set to TRUE, assigns zero as lagged value to zone without neighbors.
+:::
+
+::: callout-note
+# Do It Yourself
+
+Using the steps you learned in previous section, examine the data frame of the fixed distance weights.
+:::
+
+### Deriving adaptive distance weights
+
+In this section, you will derive an adaptive spatial weights by using the code chunk below.
+
+```{r}
+wm_ad <- hunan_GDPPC %>% 
+  mutate(nb = st_knn(geometry,
+                     k=8),
+         wt = st_weights(nb),
+               .before = 1)
+```
+
+::: callout-tip
+# Things to learn from the code chunk above
+
+-   [`st_knn()`](https://sfdep.josiahparry.com/reference/st_knn.html) of sfdep is used to identify neighbors based on k (i.e. k = 8 indicates the nearest eight neighbours). The output is a list of neighbours (i.e. nb).
+-   [`st_weights()`](https://sfdep.josiahparry.com/reference/st_weights.html) is then used to calculate polygon spatial weights of the nb list. Note that:
+    -   the default `style` argument is set to "W" for row standardized weights, and
+    -   the default `allow_zero` is set to TRUE, assigns zero as lagged value to zone without neighbors.
+:::
+
+### Calculate inverse distance weights
+
+In this section, you will derive an inverse distance weights by using the code chunk below.
+
+```{r}
+#| eval: false
+wm_idw <- hunan_GDPPC %>%
+  mutate(nb = st_contiguity(geometry),
+         wts = st_inverse_distance(nb, geometry,
+                                   scale = 1,
+                                   alpha = 1),
+         .before = 1)
+```
+
+::: callout-tip
+# Things to learn from the code chunk above
+
+-   [`st_contiguity()`](https://sfdep.josiahparry.com/reference/st_contiguity.html) of sfdep is used to identify the neighbours by using contiguity criteria. The output is a list of neighbours (i.e. nb).
+-   [`st_inverse_distance()`](https://sfdep.josiahparry.com/reference/st_inverse_distance.html) is then used to calculate inverse distance weights of neighbours on the nb list.
+:::
