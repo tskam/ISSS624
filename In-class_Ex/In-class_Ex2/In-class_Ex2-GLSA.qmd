@@ -246,7 +246,10 @@ The output of `local_moran()` is a sf data.frame containing the columns ii, eii,
 -   ii: local moran statistic
 -   eii: expectation of local moran statistic; for localmoran_permthe permutation sample means
 -   var_ii: variance of local moran statistic; for localmoran_permthe permutation sample standard deviations
--   z_ii: standard deviate of local moran statistic; for localmoran_perm based on permutation sample means and standard deviations p_ii: p-value of local moran statistic using pnorm(); for localmoran_perm using standard deviatse based on permutation sample means and standard deviations p_ii_sim: For `localmoran_perm()`, `rank()` and `punif()` of observed statistic rank for \[0, 1\] p-values using `alternative=` -p_folded_sim: the simulation folded \[0, 0.5\] range ranked p-value (based on https://github.com/pysal/esda/blob/4a63e0b5df1e754b17b5f1205b cadcbecc5e061/esda/crand.py#L211-L213)
+-   z_ii: standard deviate of local moran statistic; for localmoran_perm based on permutation sample means and standard deviations
+-   p_ii: p-value of local moran statistic using pnorm(); for localmoran_perm using standard deviatse based on permutation sample means and standard deviations
+-   p_ii_sim: For `localmoran_perm()`, `rank()` and `punif()` of observed statistic rank for \[0, 1\] p-values using `alternative=`
+-   p_folded_sim: the simulation folded \[0, 0.5\] range ranked p-value based on [crand.py](https://github.com/pysal/esda/blob/4a63e0b5df1e754b17b5f1205b8cadcbecc5e061/esda/crand.py#L211-L213) of pysal
 -   skewness: For `localmoran_perm`, the output of e1071::skewness() for the permutation samples underlying the standard deviates
 -   kurtosis: For `localmoran_perm`, the output of e1071::kurtosis() for the permutation samples underlying the standard deviates.
 
@@ -290,7 +293,7 @@ tm_shape(lisa) +
 For p-values, the appropriate classification should be 0.001, 0.01, 0.05 and not significant instead of using default classification scheme.
 :::
 
-### Visuaising local Moran's I and p-value
+### Visualising local Moran's I and p-value
 
 For effective comparison, it will be better for us to plot both maps next to each other as shown below.
 
@@ -307,7 +310,7 @@ map1 <- tm_shape(lisa) +
             main.title.size = 0.8)
 
 map2 <- tm_shape(lisa) +
-  tm_fill("p_ii",
+  tm_fill("p_ii_sim",
           breaks = c(0, 0.001, 0.01, 0.05, 1),
               labels = c("0.001", "0.01", "0.05", "Not sig")) + 
   tm_borders(alpha = 0.5) +
@@ -327,7 +330,7 @@ In lisa sf data.frame, we can find three fields contain the LISA categories. The
 ::: {style="font-size: 1.5em"}
 ```{r}
 lisa_sig <- lisa  %>%
-  filter(p_ii < 0.05)
+  filter(p_ii_sim < 0.05)
 tmap_mode("plot")
 tm_shape(lisa) +
   tm_polygons() +
@@ -369,7 +372,7 @@ Next, [`local_gstar_perm()`](https://sfdep.josiahparry.com/reference/local_gstar
 ```{r}
 HCSA <- wm_idw %>% 
   mutate(local_Gi = local_gstar_perm(
-    GDPPC, nb, wt, nsim = 99),
+    GDPPC, nb, wt, nsim = 499),
          .before = 1) %>%
   unnest(local_Gi)
 HCSA
@@ -417,7 +420,7 @@ map1 <- tm_shape(HCSA) +
             main.title.size = 0.8)
 
 map2 <- tm_shape(HCSA) +
-  tm_fill("p_value",
+  tm_fill("p_sim",
           breaks = c(0, 0.001, 0.01, 0.05, 1),
           labels = c("0.001", "0.01", "0.05", "Not sig")) + 
   tm_borders(alpha = 0.5) +
