@@ -1,0 +1,337 @@
+---
+title: "In-class Exercise 4: Calibrating Spatial Interaction Models with R"
+date: "24 January 2023"
+date-modified: "last-modified"
+format: html
+execute:
+  echo: true
+  eval: true
+  warning: false
+editor: visual
+---
+
+## Overview
+
+This in-class exercise is a continuation of Hands-on Exercise 3, In-class Exercise 3 and In-class Exercise 4: Preparing Spatial Interaction Modelling Variables. We will continue our journey of calibrating Spatial Interaction Models by using propulsiveness and attractiveness variables prepared in earlier in-class exercise.
+
+## Getting Started
+
+For the purpose of this exercise, five r packages will be used. They are:
+
+-   **sf** for importing, integrating, processing and transforming geospatial data.
+-   **tidyverse** for importing, integrating, wrangling and visualising data.
+-   **tmap** for plotting cartographicquality thematic maps.
+-   [performance](https://easystats.github.io/performance/) for computing model comparison matrices such as rmse.
+-   [ggpubr](https://rpkgs.datanovia.com/ggpubr/) for creating publication quality statistical graphics.
+
+::: callout-note
+#### Do it yourself
+
+Using the steps you learned in previous exercises, load the above packages onto R environment.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code chunk"
+pacman::p_load(tmap, sf, performance, knitr,
+               AER, MASS, ggpubr, tidyverse,
+               epiDisplay)
+```
+
+## The Data
+
+This exercise is a continuation of Hands-on Exercise 3 and In-class Exercise 4: Preparing Spatial Interaction Modelling Variables. The following data will be used:
+
+-   *flow_data_tidy.rds*, weekday morning peak passenger flows at planning subzone level.
+-   *mpsz.rds*, URA Master Plan 2019 Planning Subzone boundary in simple feature tibble data frame format.
+
+```{r}
+flow_data <- read_rds("data/rds/flow_data_tidy.rds")
+```
+
+```{r}
+glimpse(flow_data)
+```
+
+Notice that this sf tibble data.frame includes two additional fields namely: *SCHOOL_COUNT* and *BUSINESS_COUNT*. Both of them will be used as attractiveness variables when calibrating origin constrained SIM.
+
+The code chunk below is used to display the first five columns and rows of *flow_data*.
+
+```{r}
+kable(head(flow_data[, 1:5], n = 5))
+```
+
+::: callout-important
+Notice that this data.frame include intra-zonal flow.
+:::
+
+### Preparing inter-zonal flow data
+
+In general, we will calibrate separate Spatial Interaction Models for inter- and intra-zonal flows. In this hands-on exercise, we will focus our attention on inter-zonal flow. Hence, we need to exclude the intra-zonal flow from *flow_data*.
+
+First, two new columns called *FlowNoIntra* and *offset* will be created by using the code chunk below.
+
+```{r}
+flow_data$FlowNoIntra <- ifelse(
+  flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 
+  0, flow_data$TRIPS)
+flow_data$offset <- ifelse(
+  flow_data$ORIGIN_SZ == flow_data$DESTIN_SZ, 
+  0.000001, 1)
+```
+
+According to the syntax used to derive values in *FlowNoIntra* field, all intra-zonal flow will be given a value of 0 or else the original flow values will be inserted.
+
+Next, inter-zonal flow will be selected from flow_data and save into a new output data.frame called *inter_zonal_flow* by using the code chunk below.
+
+```{r}
+inter_zonal_flow <- flow_data %>%
+  filter(FlowNoIntra > 0)
+```
+
+You are ready to calibrate the Spatial Interaction Models now.
+
+## Calibrating Spatial Interaction Models
+
+In this section, we will focus on calibrating an origin constrained SIM and a doubly constrained by using *flow_data* prepared. They complement what you have learned in Hands-on Exercise 3.
+
+::: callout-note
+Students are encouraged to revise the lesson slides as well as Sub-section 2.2 of Kingsley E. Haynes and A. Stewart Fotheringham (2020) [**Gravity and Spatial Interaction Models**](https://researchrepository.wvu.edu/rri-web-book/16/).
+:::
+
+### Origin- (Production-) constrained Model
+
+Figure below shows the general formula of the origin-constrained model.
+
+![](img/image2.jpg){width="350"}
+
+Code chunk below shows the calibration of the model by using [`glm()`](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/glm) of R and *flow_data*.
+
+```{r}
+#| eval: false
+orcSIM_Poisson <- glm(formula = TRIPS ~ 
+                ORIGIN_SZ +
+                log(SCHOOL_COUNT) +
+                log(BUSINESS_COUNT) +
+                log(DIST) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow,
+              na.action = na.exclude)
+summary(orcSIM_Poisson)
+```
+
+::: callout-tip
+#### Things to learning from the conde chunk
+
+-   For origin-constrained model, only explanatory variables representing the attractiveness at the destinations will be used.
+-   All the explanatory variables including distance will be log transformed.
+-   *ORIGIN_SZ* is used to model 𝜇~𝑖~ . It must be in categorical data type.
+-   It is important to note that -1 is added in the equation after the distance variable. The -1 serves the purpose of removing the intercept that by default, glm will insert into the model.
+:::
+
+```{r}
+#| echo: false
+orcSIM_Poisson <- glm(formula = TRIPS ~ 
+                ORIGIN_SZ +
+                log(SCHOOL_COUNT) +
+                log(BUSINESS_COUNT) +
+                log(DIST) - 1,
+              family = poisson(link = "log"),
+              data = inter_zonal_flow,
+              na.action = na.exclude)
+summary(orcSIM_Poisson)
+```
+
+::: callout-tip
+#### What can we learn from the report above?
+
+-   the ⍺~1~ and ⍺~2~ of *SCHOOL_COUNT* and *BUSINESS_COUNT* are 0.4755516 and 0.1796905 respectively.
+
+-   𝛽, the distance decay parameter is -1.6929522
+
+-   there are a series of parameters which are the vector of 𝜇~𝑖~ values associated with the origin constraints.
+:::
+
+### Goodness of fit
+
+In statistical modelling, the next question we would like to answer is how well the proportion of variance in the dependent variable (i.e. TRIPS) that can be explained by the explanatory variables.
+
+In order to provide answer to this question, R-squared statistics will be used. However, R-squared is not an output of `glm()`. Hence we will write a function called `CalcRSquared` by using the code chunk below.
+
+```{r}
+CalcRSquared <- function(observed, estimated){
+  r <- cor(observed, estimated)
+  R2 <- r^2
+  R2
+}
+```
+
+NOw, we can examine how the constraints hold for destinations this time.
+
+```{r}
+CalcRSquared(orcSIM_Poisson$data$TRIPS, orcSIM_Poisson$fitted.values)
+```
+
+With reference to the R-Squared above, we can conclude that the model accounts for about 44% of the variation of flows in the systems. Not bad, but not brilliant either.
+
+### Doubly constrained model
+
+In this section, we will fit a doubly constrained SIM by using the general formula shown below:
+
+![](img/image4.jpg){width="350"}
+
+and the code chunk used is shown below.
+
+```{r}
+#| eval: false
+dbcSIM_Poisson <- glm(formula = TRIPS ~ 
+                ORIGIN_SZ + 
+                DESTIN_SZ +
+                log(DIST),
+              family = poisson(link = "log"),
+              data = inter_zonal_flow,
+              na.action = na.exclude)
+summary(dbcSIM_Poisson)
+```
+
+::: callout-important
+It is important to note that there is a slight change of the code chunk. I have removed the -1 which means that an intercept will appear in the model again. This is not because I want an intercept as it makes the origin and destination coefficients harder to interpret, rather the -1 cheat for removing the intercept only works with one factor level but in double-constrained model we have two factor levels, namely: origins and destinations.
+:::
+
+```{r}
+#| echo: false
+dbcSIM_Poisson <- glm(formula = TRIPS ~ 
+                ORIGIN_SZ + 
+                DESTIN_SZ +
+                log(DIST),
+              family = poisson(link = "log"),
+              data = inter_zonal_flow,
+              na.action = na.exclude)
+summary(dbcSIM_Poisson)
+```
+
+::: callout-note
+#### Do it yourself
+
+What statistical conclusion you can draw from the report above?
+:::
+
+Next, let us examine how well the proportion of variance in the dependent variable (i.e. TRIPS) that can be explained by the explanatory variables.
+
+::: callout-note
+#### Do it yourself
+
+Using the R-Squared function written earlier, compute the R-Squared of the Doubly-constrined Model.
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code chunk"
+CalcRSquared(dbcSIM_Poisson$data$TRIPS,
+             dbcSIM_Poisson$fitted.values)
+```
+
+Notice that there is a relatively greater improvement in the R-Squared value.
+
+## Model comparison
+
+### Statistical measures
+
+Another useful model performance measure for continuous dependent variable is [Root Mean Squared Error](https://towardsdatascience.com/what-does-rmse-really-mean-806b65f2e48e). In this sub-section, you will learn how to use [`compare_performance()`](https://easystats.github.io/performance/reference/compare_performance.html) of [**performance**](https://easystats.github.io/performance/index.html) package
+
+First of all, let us create a list called *model_list* by using the code chunk below.
+
+```{r}
+model_list <- list(
+  Origin_Constrained = orcSIM_Poisson,
+  Doubly_Constrained = dbcSIM_Poisson)
+```
+
+Next, we will compute the RMSE of all the models in *model_list* file by using the code chunk below.
+
+```{r}
+compare_performance(model_list,
+                    metrics = "RMSE")
+```
+
+The print above reveals that doubly constrained SIM is the best model among the two SIMs because it has the smallest RMSE value of 1906.694.
+
+### Visualising fitted values
+
+In this section, you will learn how to visualise the observed values and the fitted values.
+
+Firstly we will extract the fitted values from Origin-constrained Model by using the code chunk below.
+
+```{r}
+df <- as.data.frame(orcSIM_Poisson$fitted.values) %>%
+  round(digits = 0)
+```
+
+Next, we will append the fitted values into *inter_zonal_flow* data frame by using the code chunk below.
+
+```{r}
+inter_zonal_flow <- inter_zonal_flow %>%
+  cbind(df) %>%
+  rename(orcTRIPS = "orcSIM_Poisson.fitted.values")
+```
+
+::: callout-tip
+Notice that `rename()` is used to rename the field name and the `$` in the original field name has been replaced with an `.`. This is because R replaced `$` with `.` during the `cbind()`.
+:::
+
+::: callout-note
+#### Do it yourself
+
+Repeat the same step for Doubly Constrained Model (i.e. dbcSIM_Poisson)
+:::
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code chunk"
+df <- as.data.frame(dbcSIM_Poisson$fitted.values) %>%
+  round(digits = 0)
+```
+
+```{r}
+#| code-fold: true
+#| code-summary: "Show the code chunk"
+inter_zonal_flow <- inter_zonal_flow %>%
+  cbind(df) %>%
+  rename(dbcTRIPS = "dbcSIM_Poisson.fitted.values")
+```
+
+Next, two scatterplots will be created by using [`geom_point()`](https://ggplot2.tidyverse.org/reference/geom_point.html) and other appropriate functions of [**ggplot2**](https://ggplot2.tidyverse.org/) package.
+
+```{r}
+#| fig-height: 8
+orc_p <- ggplot(data = inter_zonal_flow,
+                aes(x = orcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  coord_cartesian(xlim=c(0,150000),
+                  ylim=c(0,150000))
+
+dbc_p <- ggplot(data = inter_zonal_flow,
+                aes(x = dbcTRIPS,
+                    y = TRIPS)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  coord_cartesian(xlim=c(0,150000),
+                  ylim=c(0,150000))
+```
+
+Now, we will put all the graphs into a single visual for better comparison by using the code chunk below.
+
+```{r}
+#| fig-width: 12
+#| fig-height: 7
+ggarrange(orc_p, dbc_p,
+          ncol = 2,
+          nrow = 1)
+```
+
+::: {.callout-note}
+#### Quiz
+What observation can you draw from the figure above and what follow-up action will you take?
+:::

@@ -14,7 +14,7 @@ editor: visual
 
 ## Overview
 
-A healthy baby need healthy food.  Likewise, a well calibrated Spatial Interaction Model need conceptually logical and well prepared propulsiveness and attractiveness variables. In this in-class exercise, you will gain hands-on experience on preparing propulsiveness and attractiveness variables require for calibrating spatial interaction models. By the end of this in-class exercise, you will be able to:
+A healthy baby need healthy food. Likewise, a well calibrated Spatial Interaction Model need conceptually logical and well prepared propulsiveness and attractiveness variables. In this in-class exercise, you will gain hands-on experience on preparing propulsiveness and attractiveness variables require for calibrating spatial interaction models. By the end of this in-class exercise, you will be able to:
 
 -   perform geocoding by using SLA OneMap API,
 -   convert an aspatial data into a simple feature tibble data.frame,
@@ -38,7 +38,7 @@ pacman::p_load(tidyverse, sf, httr,
 
 To get started, you are required to download *General information of schools* data set of School Directory and Information from [data.gov.sg](https://beta.data.gov.sg/).
 
-::: callout-important
+::: {.callout-important}
 We assume that the downloaded School Directory and Information is placed in a sub-folder called `data/aspatial/`).
 :::
 
@@ -152,8 +152,7 @@ mpsz <- st_read(dsn = "data/geospatial/",
   st_transform(crs = 3414)
 ```
 
-
-::: {.callout-info}
+::: callout-info
 #### Do it yourself!
 
 Using the steps you learned in previous exercises, create a point symbol map showing the location of schools with OSM as the background map.
@@ -173,7 +172,7 @@ tm_shape(schools_sf) +
 
 Next, we will count the number of schools located inside the planning subzones.
 
-::: {.callout-note}
+::: callout-note
 #### Do it yourself!
 
 Using the steps you learned from previous hands-on exercises, count the number of schools within each planning subzone by using `lengths()` of **Base** and `st_intersects()` of **sf** package.
@@ -199,11 +198,9 @@ Using the steps you learned in previous exercises, compute and display the summa
 summary(mpsz$SCHOOL_COUNT)
 ```
 
-::: {.callout-important}
-The summary statistics above reveals that there are excessive 0 values in SCHOOL_COUNT field.  If `log()` is going to use to transform this field, additional step is required to ensure that all 0 will be replaced with a value between 0 and 1 but not 0 neither 1. 
+::: callout-important
+The summary statistics above reveals that there are excessive 0 values in SCHOOL_COUNT field. If `log()` is going to use to transform this field, additional step is required to ensure that all 0 will be replaced with a value between 0 and 1 but not 0 neither 1.
 :::
-
-
 
 ## Data Integration and Final Touch-up
 
@@ -212,7 +209,6 @@ The summary statistics above reveals that there are excessive 0 values in SCHOOL
 
 Using the steps you learned in earlier sub-sections, count the number of Business points in each planning subzone.
 :::
-
 
 ```{r}
 business_sf <- st_read(dsn = "data/geospatial",
@@ -276,8 +272,8 @@ flow_data <- flow_data %>%
          DIST = dist)
 ```
 
-::: {.callout-important}
-Note that the unique join field used is DESTIN_SZ of flow_data and SUBZONE_C of mpsz_tidy.  Do you know why?
+::: callout-important
+Note that the unique join field used is DESTIN_SZ of flow_data and SUBZONE_C of mpsz_tidy. Do you know why?
 :::
 
 ### Checking for variables with zero values
@@ -311,7 +307,7 @@ summary(flow_data)
 
 Notice that all the 0 values have been replaced by 0.99.
 
-Before we move on to calibrate the Spatial Interaction Models, let us save flow_data sf tibble data.frame into an rds file.  Call the file *flow_data_tidy*.
+Before we move on to calibrate the Spatial Interaction Models, let us save flow_data sf tibble data.frame into an rds file. Call the file *flow_data_tidy*.
 
 ```{r}
 write_rds(flow_data,
