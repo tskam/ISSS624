@@ -34,8 +34,7 @@ Using the steps you learned in previous exercises, load the above packages onto 
 #| code-fold: true
 #| code-summary: "Show the code chunk"
 pacman::p_load(tmap, sf, performance, knitr,
-               AER, MASS, ggpubr, tidyverse,
-               epiDisplay)
+               ggpubr, tidyverse)
 ```
 
 ## The Data
@@ -331,7 +330,8 @@ ggarrange(orc_p, dbc_p,
           nrow = 1)
 ```
 
-::: {.callout-note}
+::: callout-note
 #### Quiz
+
 What observation can you draw from the figure above and what follow-up action will you take?
 :::

@@ -347,7 +347,7 @@
     "href": "In-class_Ex/In-class_Ex4/In-class_Ex4-SIMs.html#getting-started",
     "title": "In-class Exercise 4: Calibrating Spatial Interaction Models with R",
     "section": "Getting Started",
-    "text": "Getting Started\nFor the purpose of this exercise, five r packages will be used. They are:\n\nsf for importing, integrating, processing and transforming geospatial data.\ntidyverse for importing, integrating, wrangling and visualising data.\ntmap for plotting cartographicquality thematic maps.\nperformance for computing model comparison matrices such as rmse.\nggpubr for creating publication quality statistical graphics.\n\n\n\n\n\n\n\nDo it yourself\n\n\n\nUsing the steps you learned in previous exercises, load the above packages onto R environment.\n\n\n\n\nShow the code chunk\npacman::p_load(tmap, sf, performance, knitr,\n               AER, MASS, ggpubr, tidyverse,\n               epiDisplay)"
+    "text": "Getting Started\nFor the purpose of this exercise, five r packages will be used. They are:\n\nsf for importing, integrating, processing and transforming geospatial data.\ntidyverse for importing, integrating, wrangling and visualising data.\ntmap for plotting cartographicquality thematic maps.\nperformance for computing model comparison matrices such as rmse.\nggpubr for creating publication quality statistical graphics.\n\n\n\n\n\n\n\nDo it yourself\n\n\n\nUsing the steps you learned in previous exercises, load the above packages onto R environment.\n\n\n\n\nShow the code chunk\npacman::p_load(tmap, sf, performance, knitr,\n               ggpubr, tidyverse)"
   },
   {
     "objectID": "In-class_Ex/In-class_Ex4/In-class_Ex4-SIMs.html#the-data",
