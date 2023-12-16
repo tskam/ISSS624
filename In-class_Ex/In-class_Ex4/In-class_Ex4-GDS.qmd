@@ -38,7 +38,7 @@ pacman::p_load(tidyverse, sf, httr,
 
 To get started, you are required to download *General information of schools* data set of School Directory and Information from [data.gov.sg](https://beta.data.gov.sg/).
 
-::: {.callout-important}
+::: callout-important
 We assume that the downloaded School Directory and Information is placed in a sub-folder called `data/aspatial/`).
 :::
 
@@ -131,6 +131,13 @@ schools_sf <- st_as_sf(schools,
                        crs=4326) %>%
   st_transform(crs = 3414)
 ```
+
+Let's save *schools_sf* into an rds file by usign the code chunk below.
+
+```{r}
+write_rds(schools_sf, "data/rds/schools.rds")
+```
+
 
 ### Plotting a point simple feature layer
 

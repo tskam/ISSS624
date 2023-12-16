@@ -22,7 +22,9 @@ website:
           - text: "In-class Exercise 4: GDS"
             href: In-class_Ex/In-class_Ex4/In-class_Ex4-GDS.html
           - text: "In-class Exercise 4: SIMs"
-            href: In-class_Ex/In-class_Ex4/In-class_Ex4-SIMs.html  
+            href: In-class_Ex/In-class_Ex4/In-class_Ex4-SIMs.html
+          - text: "In-class Exercise 5: SEIM"
+            href: In-class_Ex/In-class_Ex5/In-class_Ex5-SEIM.html
       - text: Take-home Exercise
         menu: 
           - text: Take-home Exercise 1

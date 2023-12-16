@@ -212,6 +212,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#statistical-measures" id="toc-statistical-measures" class="nav-link" data-scroll-target="#statistical-measures">Statistical measures</a></li>
   <li><a href="#visualising-fitted-values" id="toc-visualising-fitted-values" class="nav-link" data-scroll-target="#visualising-fitted-values">Visualising fitted values</a></li>
+  <li><a href="#test-for-overdispersion" id="toc-test-for-overdispersion" class="nav-link" data-scroll-target="#test-for-overdispersion">Test for overdispersion</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -279,7 +280,8 @@ Do it yourself
 <details>
 <summary>Show the code chunk</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(tmap, sf, performance, knitr,</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               ggpubr, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               AER, MASS, ggpubr, tidyverse,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               epiDisplay)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -1561,21 +1563,16 @@ Do it yourself
 <span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">ncol =</span> <span class="dv">2</span>,</span>
 <span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">nrow =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="In-class_Ex4-SIMs_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="1152"></p>
+<p><img src="In-class_Ex4-SIMs-v2_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="1152"></p>
 </div>
 </div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Quiz
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>What observation can you draw from the figure above and what follow-up action will you take?</p>
-</div>
+</section>
+<section id="test-for-overdispersion" class="level3">
+<h3 class="anchored" data-anchor-id="test-for-overdispersion">Test for overdispersion</h3>
+<p>An assumption that must be fulfilled on Poisson distribution is the mean value of data equals to the variance value (or so-called <strong>equidispersion</strong>). If the variance value is greater than the mean value, it is called <strong>overdispersion</strong>. Overdispersion occurs due to such factors as the presence greater variance of response variable caused by other variables unobserved heterogeneity, the influence of other variables which leads to dependence of the probability of an event on previous events, the presence of outliers, the existence of excess zeros on response variable. If the equidispersion is not met, the Poisson regression is no longer appropriate to model the data. Moreover, the resulted model will yield biased parameter estimation and underestimated standard error, leading to invalid conclusions.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dispersiontest</span>(dbcSIM_Piosson,</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">trafo=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
