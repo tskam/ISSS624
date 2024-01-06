@@ -3,7 +3,7 @@ title: "In-class Exercise 5: Spatial Econometric Interaction Modelling"
 date: "13 February 2023"
 date-modified: "last-modified"
 format: 
-  html:
+  docx:
     fontsize: 18px
 execute: 
   echo: true

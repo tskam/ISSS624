@@ -2,7 +2,7 @@
 title: "In-class Exercise 1: My First Date with Geospatial Data Science"
 date: "18 November 2023"
 date-modified: "last-modified"
-format: html
+format: docx
 execute: 
   echo: true
   eval: true
@@ -302,6 +302,5 @@ tm_shape(origintrip_SZ)+
   tm_credits("Source: Planning Sub-zone boundary from URA\n and Passenger trips data from LTA", 
              position = c("left", "bottom"))
 ```
+
 :::
-
-

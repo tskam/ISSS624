@@ -2,7 +2,7 @@
 title: "In-class Exercise 4: Calibrating Spatial Interaction Models with R"
 date: "24 January 2023"
 date-modified: "last-modified"
-format: html
+format: docx
 execute:
   echo: true
   eval: true

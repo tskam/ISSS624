@@ -3,7 +3,7 @@ title: "In-class Exercise 2: Spatial Weights - sfdep methods"
 date: "10 February 2023"
 date-modified: "last-modified"
 format: 
-  html:
+  docx:
     fontsize: 20px
 execute: 
   echo: true
@@ -74,6 +74,7 @@ hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
 
 ::: callout-note
 ## Do It Yourself!
+
 Using the steps you learned in previous lesson, combine the Hunan sf data frame and Hunan_2012 data frame. Ensure that the output is an sf data frame.
 :::
 
@@ -163,10 +164,11 @@ nb_queen
 
 The print shows that polygon 1 has five neighbours. They are polygons number 2, 3, 4, 57,and 85.
 
-One of the advantage of **sfdep** over **spdep** is that the output is an sf tibble data frame.   
+One of the advantage of **sfdep** over **spdep** is that the output is an sf tibble data frame.
 
 ::: callout-note
 ## Do It Yourself!
+
 Using the steps you learned in previous lesson, display nb_queen sf tibble data frame in a table display.
 :::
 
@@ -181,6 +183,7 @@ kable(head(nb_queen,
 
 ::: callout-note
 ## Do It Yourself!
+
 Using the steps you just learned, derive a contiguity neighbour list using Rooks' method.
 :::
 
@@ -199,6 +202,7 @@ There are times that we need to identify high order contiguity neighbours. To ac
 
 ::: callout-note
 ## Do It Yourself!
+
 Using the steps you just learned, derive a contiguity neighbour list using lag 2 Queen's method.
 :::
 
